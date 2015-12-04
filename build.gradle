@@ -52,9 +52,9 @@ repositories {
 
 task injectProperties() {
 
-    ext.profile = project.hasProperty('profile') ? project.profile : 'beta'
+    ext.profile = project.hasProperty('profile') ? project.profile : 'production'
 
-    if(ext.profile == 'beta') {
+    if(ext.profile == 'production') {
         def propertyFilePath = "${project.buildDir}/resources/main/properties/app-production.properties"
         def prop = new Properties()
         def propFile = new File(propertyFilePath)
