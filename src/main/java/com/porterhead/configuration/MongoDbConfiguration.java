@@ -63,6 +63,7 @@ public class MongoDbConfiguration extends AbstractMongoConfiguration {
     @Override
     @Bean
     public Mongo mongo() throws Exception {
+        LOG.info("Configuring mongo DBserver: " + mongoServer + ";port " + mongoPort);
         return new Mongo(mongoServer, mongoPort);
     }
 
