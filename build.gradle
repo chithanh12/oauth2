@@ -46,11 +46,50 @@ ext {
 
 }
 
-
 repositories {
     mavenCentral()
 }
 
+task injectProperties() {
+
+    ext.profile = project.hasProperty('profile') ? project.profile : 'beta'
+
+    if(ext.profile == 'beta') {
+        def propertyFilePath = "${project.buildDir}/resources/main/properties/app-production.properties"
+        def prop = new Properties()
+        def propFile = new File(propertyFilePath)
+        propFile.createNewFile()
+        prop.store(propFile.newWriter(), null)
+
+        ant.propertyfile(file: propertyFilePath) {
+            entry(key: "mongo.db.server", value: "${System.env.MONGODB_HOST}")
+            entry(key: "mongo.db.port", value: "${System.env.MONGODB_PORT}")
+            entry(key: "mongo.db.name", value: "oauth-provider")
+            entry(key: "mongo.db.logon", value: "")
+            entry(key: "mongo.db.password", value: "")
+            entry(key: "application.version", value: "1.0.0")
+            entry(key: "oauth.token.access.expiresInSeconds", value: "5184000")
+            entry(key: "oauth.token.refresh.expiresInSeconds", value: "5184000")
+            entry(key: "hostName.url", value: "http://localhost:8080/oauth2-provider")
+            entry(key: "token.emailRegistration.timeToLive.inMinutes", value: "1440")
+            entry(key: "token.emailVerification.timeToLive.inMinutes", value: "1440")
+            entry(key: "token.lostPassword.timeToLive.inMinutes", value: "30")
+            entry(key: "email.services.fromAddress", value: "foo@example.com")
+            entry(key: "email.services.replyToAddress", value: "foo@example.com")
+            entry(key: "email.services.emailVerificationSubjectText", value: "[APP NAME] Please verify your email Address")
+            entry(key: "email.services.emailRegistrationSubjectText", value: "Welcome to the <APP NAME> application")
+            entry(key: "email.services.lostPasswordSubjectText", value: "[APP NAME] Reset Password")
+            entry(key: "email.services.sender.host", value: "smtp.gmail.com")
+            entry(key: "email.services.sender.port", value: "587")
+            entry(key: "email.services.sender.username", value: "${System.env.OAUTH_ADMIN_EMAIL}")
+            entry(key: "email.services.sender.password", value: "${System.env.OAUTH_ADMIN_EMAIL_PASSWORD}")
+            entry(key: "cors.allowed.origins", value: "http://localhost:8080")
+
+        }
+
+        ant.replaceregexp(file: propertyFilePath, match: "\\\\:", replace: ":", byline: true, flags:"g")
+    }
+}
 
 dependencies {
 
@@ -119,7 +158,9 @@ dependencies {
 
     emma "emma:emma:2.1.5320"
     emma "emma:emma_ant:2.1.5320"
-
+    war{
+        dependsOn injectProperties
+    }
 
     test {
         exclude("**/*IntegrationTest*")
